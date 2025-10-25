@@ -1,0 +1,35 @@
+[project]
+name = "supyx"
+version = "0.1.0"
+description = "Personal Python utilities library with vim-like navigation for wxPython"
+requires-python = ">=3.11"
+dependencies = []
+authors = [
+    { name = "suxiong" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+keywords = ["wxpython", "vim-navigation", "utilities", "gui", "keyboard-navigation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: User Interfaces",
+]
+
+[project.urls]
+Homepage = "https://github.com/SullivanXiong/supyx"
+Repository = "https://github.com/SullivanXiong/supyx"
+Issues = "https://github.com/SullivanXiong/supyx/issues"
+
+[project.optional-dependencies]
+wx = ["wxPython>=4.2.0"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
