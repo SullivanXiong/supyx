@@ -85,7 +85,8 @@ class SearchOverlay:
         # ESC to cancel
         if keycode == wx.WXK_ESCAPE:
             self.hide()
-            self.parent.set_vim_mode(self.parent.vim_mode.__class__.NORMAL)
+            from .modes import VimMode
+            self.parent.set_vim_mode(VimMode.DEFAULT)
             return True
         
         # Enter to search
@@ -108,7 +109,8 @@ class SearchOverlay:
     def _on_cancel(self, event):
         """Handle cancel button."""
         self.hide()
-        self.parent.set_vim_mode(self.parent.vim_mode.__class__.NORMAL)
+        from .modes import VimMode
+        self.parent.set_vim_mode(VimMode.DEFAULT)
     
     def _search(self, query):
         """
