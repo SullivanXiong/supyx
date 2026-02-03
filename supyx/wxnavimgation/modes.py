@@ -72,7 +72,7 @@ class VimNavigationMixin:
         focused = wx.Window.FindFocus()
         is_input = isinstance(focused, (wx.TextCtrl, wx.ComboBox, wx.SearchCtrl))
 
-        # ESC handling - only cancels HINT/SEARCH modes
+        # ESC handling - cancels HINT/SEARCH modes, or removes focus from input
         if keycode == wx.WXK_ESCAPE:
             if self.vim_mode == VimMode.HINT:
                 self.hint_overlay.hide()
@@ -82,8 +82,12 @@ class VimNavigationMixin:
                 self.search_overlay.hide()
                 self.set_vim_mode(VimMode.DEFAULT)
                 return  # Consume the event
+            elif is_input and focused:
+                # Remove focus from input field
+                self.SetFocus()
+                return  # Consume the event
             else:
-                # ESC does nothing in DEFAULT mode - let event propagate
+                # ESC does nothing in DEFAULT mode without input focus
                 event.Skip()
                 return
 
