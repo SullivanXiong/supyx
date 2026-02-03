@@ -83,8 +83,24 @@ class VimNavigationMixin:
                 self.set_vim_mode(VimMode.DEFAULT)
                 return  # Consume the event
             elif is_input and focused:
-                # Remove focus from input field
-                self.SetFocus()
+                # Remove focus from input field using CallLater for macOS
+                def find_focusable(window):
+                    """Find a non-input widget that can accept focus."""
+                    for child in window.GetChildren():
+                        if isinstance(child, wx.ListCtrl):
+                            return child
+                        result = find_focusable(child)
+                        if result:
+                            return result
+                    return None
+
+                def do_focus():
+                    target = find_focusable(self)
+                    if target:
+                        target.SetFocus()
+
+                # Use CallLater with small delay for macOS compatibility
+                wx.CallLater(10, do_focus)
                 return  # Consume the event
             else:
                 # ESC does nothing in DEFAULT mode without input focus
