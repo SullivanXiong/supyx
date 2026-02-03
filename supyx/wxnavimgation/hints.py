@@ -136,7 +136,8 @@ class HintOverlay:
             hint_type: 'input' for input fields only, 'all' for all clickable
 
         Returns:
-            List of widgets to show hints on
+            List of widgets/items to show hints on. For ListCtrl items,
+            returns tuples of (ListCtrl, item_index).
         """
         widgets = []
 
@@ -149,10 +150,15 @@ class HintOverlay:
                 if isinstance(widget, (wx.TextCtrl, wx.ComboBox, wx.SearchCtrl)):
                     widgets.append(widget)
             else:  # 'all' - clickable elements
-                if isinstance(widget, (
+                if isinstance(widget, wx.ListCtrl):
+                    # Add individual list items instead of the whole ListCtrl
+                    item_count = widget.GetItemCount()
+                    for i in range(item_count):
+                        widgets.append((widget, i))  # Tuple: (ListCtrl, item_index)
+                elif isinstance(widget, (
                     wx.Button, wx.BitmapButton, wx.ToggleButton,
                     wx.CheckBox, wx.RadioButton,
-                    wx.ListCtrl, wx.Choice, wx.ComboBox,
+                    wx.Choice, wx.ComboBox,
                     wx.TextCtrl, wx.SearchCtrl  # Include inputs in 'all' mode too
                 )):
                     widgets.append(widget)
@@ -194,27 +200,56 @@ class HintOverlay:
                 first_idx = first_idx // num_chars
                 return chars[first_idx] + chars[third_idx] + chars[second_idx]
 
-    def _create_hint_window(self, widget, hint_str):
-        """Create a hint label window on top of the widget."""
-        # Get widget position relative to parent
-        pos = widget.GetScreenPosition()
-        parent_pos = self.parent.GetScreenPosition()
-        relative_pos = (pos.x - parent_pos.x, pos.y - parent_pos.y)
-
+    def _create_hint_window(self, widget_or_item, hint_str):
+        """Create a hint label window on top of the widget or list item."""
         # Calculate size based on hint string length
-        hint_width = max(20, 10 + len(hint_str) * 10)
+        hint_width = 8 + len(hint_str) * 8
+        hint_height = 16
+
+        # Handle ListCtrl items (tuples of (ListCtrl, item_index))
+        if isinstance(widget_or_item, tuple):
+            list_ctrl, item_index = widget_or_item
+            # Get item rect (relative to ListCtrl client area)
+            item_rect = list_ctrl.GetItemRect(item_index)
+            # Convert item position to screen coordinates
+            item_screen_x, item_screen_y = list_ctrl.ClientToScreen((item_rect.x, item_rect.y))
+            # Get parent's client area screen position (excludes title bar)
+            parent_client_x, parent_client_y = self.parent.ClientToScreen((0, 0))
+            # Position hint on the checkbox (first column)
+            relative_pos = (
+                item_screen_x - parent_client_x + 5,
+                item_screen_y - parent_client_y + (item_rect.height - hint_height) // 2
+            )
+        else:
+            # Regular widget
+            pos = widget_or_item.GetScreenPosition()
+            size = widget_or_item.GetSize()
+            # Get parent's client area screen position (excludes title bar)
+            parent_client_x, parent_client_y = self.parent.ClientToScreen((0, 0))
+            # Center hint on the widget
+            relative_pos = (
+                pos.x - parent_client_x + (size.width - hint_width) // 2,
+                pos.y - parent_client_y + (size.height - hint_height) // 2
+            )
 
         # Create a small panel for the hint
-        hint_panel = wx.Panel(self.parent, pos=relative_pos, size=(hint_width, 20))
+        hint_panel = wx.Panel(self.parent, pos=relative_pos, size=(hint_width, hint_height))
         hint_panel.SetBackgroundColour(wx.Colour(254, 218, 49))  # Yellow (#feda31)
 
-        # Add text
-        hint_text = wx.StaticText(hint_panel, label=hint_str.upper(), pos=(3, 2))
+        # Add centered text
+        hint_text = wx.StaticText(hint_panel, label=hint_str.upper())
         font = hint_text.GetFont()
-        font.PointSize = 10
+        font.PointSize = 9
         font = font.Bold()
         hint_text.SetFont(font)
         hint_text.SetForegroundColour(wx.Colour(74, 64, 14))  # Dark brown (#4a400e)
+
+        # Center text in panel
+        text_size = hint_text.GetSize()
+        hint_text.SetPosition((
+            (hint_width - text_size.width) // 2,
+            (hint_height - text_size.height) // 2
+        ))
 
         # Raise to top
         hint_panel.Raise()
@@ -231,14 +266,30 @@ class HintOverlay:
                 else:
                     window.Hide()
 
-    def _activate_widget(self, widget):
+    def _activate_widget(self, widget_or_item):
         """
-        Activate the selected widget.
+        Activate the selected widget or list item.
 
         For buttons: simulate click
         For inputs: focus them
         For checkboxes: toggle and focus
+        For list items: select and trigger double-click (activation)
         """
+        # Handle ListCtrl items (tuples of (ListCtrl, item_index))
+        if isinstance(widget_or_item, tuple):
+            list_ctrl, item_index = widget_or_item
+            # Select the item
+            list_ctrl.Select(item_index)
+            list_ctrl.Focus(item_index)
+            list_ctrl.SetFocus()
+            # Trigger item activated event (like double-click)
+            event = wx.ListEvent(wx.wxEVT_LIST_ITEM_ACTIVATED, list_ctrl.GetId())
+            event.SetIndex(item_index)
+            event.SetEventObject(list_ctrl)
+            list_ctrl.GetEventHandler().ProcessEvent(event)
+            return
+
+        widget = widget_or_item
         if isinstance(widget, (wx.Button, wx.BitmapButton, wx.ToggleButton)):
             # Generate a button click event
             event = wx.CommandEvent(wx.wxEVT_COMMAND_BUTTON_CLICKED, widget.GetId())
