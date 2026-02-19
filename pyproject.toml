@@ -1,7 +1,7 @@
 [project]
 name = "supyx"
-version = "0.2.0"
-description = "Personal Python utilities library with vim-like navigation for wxPython"
+version = "0.3.0"
+description = "Python utilities library with vim-like navigation for any UI framework"
 requires-python = ">=3.11"
 dependencies = []
 authors = [
@@ -9,7 +9,7 @@ authors = [
 ]
 readme = "README.md"
 license = { text = "MIT" }
-keywords = ["wxpython", "vim-navigation", "utilities", "gui", "keyboard-navigation"]
+keywords = ["vim-navigation", "utilities", "gui", "keyboard-navigation", "textual", "wxpython"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -29,6 +29,7 @@ Issues = "https://github.com/SullivanXiong/supyx/issues"
 
 [project.optional-dependencies]
 wx = ["wxPython>=4.2.0"]
+textual = ["textual>=0.87.0"]
 
 [build-system]
 requires = ["hatchling"]
