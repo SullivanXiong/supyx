@@ -137,8 +137,11 @@ class TextualVimMixin:
         # Normalize key string
         key_string = _KEY_MAP.get(base_key, "")
         if not key_string:
-            # Single printable character
-            if event.character and len(event.character) == 1:
+            if ctrl or alt:
+                # With modifiers, event.character is a control code (e.g. \x07
+                # for Ctrl+G), so use the base key name from the key string
+                key_string = base_key.lower()
+            elif event.character and len(event.character) == 1:
                 key_string = event.character.lower()
             elif len(base_key) == 1:
                 key_string = base_key.lower()
