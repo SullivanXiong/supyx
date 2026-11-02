@@ -1,0 +1,14 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Reviewed updates that wait out a seven-day release delay (docs/supply-chain-audit.md). Security fixes wait too; a fix that cannot wait goes in as a written exception.",
+  "extends": ["config:recommended"],
+  "minimumReleaseAge": "7 days",
+  "minimumReleaseAgeBehaviour": "timestamp-required",
+  "internalChecksFilter": "strict",
+  "prCreation": "not-pending",
+  "internalChecksAsSuccess": true,
+  "pinDigests": true,
+  "dependencyDashboard": true,
+  "vulnerabilityAlerts": {"minimumReleaseAge": "7 days"},
+  "lockFileMaintenance": {"enabled": true}
+}
