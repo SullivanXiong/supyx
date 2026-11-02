@@ -31,6 +31,11 @@ Issues = "https://github.com/SullivanXiong/supyx/issues"
 wx = ["wxPython>=4.2.0"]
 textual = ["textual>=0.87.0"]
 
+[tool.uv]
+# Releases must be seven days old before a lock may pick them. The machine config sets the
+# same delay; this keeps it when the lock is made somewhere else.
+exclude-newer = "7 days"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
